@@ -1,0 +1,102 @@
+#!/bin/bash
+#
+# nombre              : clean-homes
+# descripción         : Realiza una limpieza en homes de alumnos y profesores
+# autor               : Esteban M. Navas Martín
+# fecha creación      : 06042017
+# última modificación : 06042017
+# uso                 : clean-homes
+# instalación         : Guardar en  /usr/local/sbin/
+# sugerencia          : Programar tarea cron:
+#                       00 9    * * 7   root    /usr/local/sbin/clean-homes
+
+#
+# Copyright 2017, Esteban M. Navas Martín <algodelinux@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License at <http://www.gnu.org/licenses/> for
+# more details.
+#
+
+function uso {
+   echo "Limpieza de homes con BleachBit"
+   echo "Debe indicar si desea limpiar homes de alumnos, profesores o todos:"
+   echo "     USO: $(basename $0) --clean profesor"
+   echo "     USO: $(basename $0) --clean alumnos"
+   echo "     USO: $(basename $0) --clean all"
+}
+
+function clean_home {
+   for usuario in `ls /home/$1`; do
+
+     if [ "$usuario" = "dpto" ]; then continue; fi
+
+     id $usuario > /dev/null 2>&1
+
+     if [ $? -eq 0 ]; then
+
+        echo "Limpiando /home/$1/$usuario"
+        su $usuario -c "bleachbit --clean adobe_reader.cache 2>/dev/null"
+        su $usuario -c "bleachbit --clean adobe_reader.mru 2>/dev/null"
+        su $usuario -c "bleachbit --clean adobe_reader.tmp 2>/dev/null"
+	su $usuario -c "bleachbit --clean chromium.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean chromium.vacuum 2>/dev/null"
+	su $usuario -c "bleachbit --clean google-chrome.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean google-chrome.vacuum 2>/dev/null"
+	su $usuario -c "bleachbit --clean firefox.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean firefox.vacuum 2>/dev/null"
+	su $usuario -c "bleachbit --clean firefox.crash_reports 2>/dev/null"
+	su $usuario -c "bleachbit --clean google_earth.temporary_files 2>/dev/null"
+	su $usuario -c "bleachbit --clean java.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean flash.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean flash.cookies 2>/dev/null"
+	su $usuario -c "bleachbit --clean libreoffice.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean libreoffice.history 2>/dev/null"
+	su $usuario -c "bleachbit --clean sqlite3.history 2>/dev/null"
+        su $usuario -c "bleachbit --clean system.cache system.memory system.trash system.tmp 2>/dev/null"
+     fi
+  done
+}
+
+# Si bleachbit no se encuentra instalado, mostramos mensaje y finalizamos
+if ! [ -x /usr/bin/bleachbit  ]; then
+   echo "BleachBit no se encuentra instalado."
+   echo "Para instalarlo puede ejecutar:"
+   echo "   apt-get install bleachbit."
+   exit 1
+fi
+
+# Si no hay parámetros, mostramos ayuda y finalizamos
+if [ -z "$1" ]; then
+   uso
+   exit 1;
+fi
+
+# read the options
+TEMP=`getopt -o hc: --long help,clean: -n "$0" -- "$@"`
+eval set -- "$TEMP"
+
+# extract options and their arguments into variables.
+while true; do
+   case "$1" in
+       -c|--clean)
+            case "$2" in
+                "profesor") clean_home profesor; shift 2 ;;
+                "alumnos") clean_home alumnos; shift 2 ;;
+                "all") clean_home profesor; clean_home alumnos; shift 2 ;;
+                *) shift 2 ;;
+            esac ;;
+       --)  uso
+            exit 0 ;;
+       -h | *) # Display help.
+            uso
+            exit 0 ;;
+   esac
+done
