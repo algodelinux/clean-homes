@@ -25,3 +25,7 @@ Debe indicar si desea limpiar homes de alumnos, profesores o todos:
    * clean-homes -c all
    * clean-homes --clean all
 
+## Authors
+
+- Esteban M. Navas Martín (algodelinux@gmail.com)
+
