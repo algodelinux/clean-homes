@@ -4,7 +4,7 @@
 # descripción         : Realiza una limpieza en homes de alumnos y profesores
 # autor               : Esteban M. Navas Martín
 # fecha creación      : 06042017
-# última modificación : 06042017
+# última modificación : 04112020
 # uso                 : clean-homes
 # instalación         : Guardar en  /usr/local/sbin/
 # sugerencia          : Programar tarea cron:
@@ -60,9 +60,10 @@ function clean_home {
 	su $usuario -c "bleachbit --clean libreoffice.cache 2>/dev/null"
 	su $usuario -c "bleachbit --clean libreoffice.history 2>/dev/null"
 	su $usuario -c "bleachbit --clean sqlite3.history 2>/dev/null"
-        su $usuario -c "bleachbit --clean system.cache system.memory system.trash system.tmp 2>/dev/null"
      fi
   done
+  
+  bleachbit --clean system.cache system.memory system.trash system.tmp 2>/dev/null
 }
 
 # Si bleachbit no se encuentra instalado, mostramos mensaje y finalizamos
