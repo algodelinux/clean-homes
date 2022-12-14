@@ -3,15 +3,15 @@
 # nombre              : clean-homes
 # descripción         : Realiza una limpieza en homes de alumnos y profesores
 # autor               : Esteban M. Navas Martín
-# fecha creación      : 06042017
-# última modificación : 04112020
+# fecha creación      : 06/04/2017
+# última modificación : 13/06/2022
 # uso                 : clean-homes
 # instalación         : Guardar en  /usr/local/sbin/
 # sugerencia          : Programar tarea cron:
 #                       00 9    * * 7   root    /usr/local/sbin/clean-homes
 
 #
-# Copyright 2017, Esteban M. Navas Martín <algodelinux@gmail.com>
+# Copyright 2017-2022, Esteban M. Navas Martín <algodelinux@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,13 +43,16 @@ function clean_home {
      if [ $? -eq 0 ]; then
 
         echo "Limpiando /home/$1/$usuario"
+        su $usuario -c "rm -R .cache/* 2>/dev/null"
         su $usuario -c "bleachbit --clean adobe_reader.cache 2>/dev/null"
         su $usuario -c "bleachbit --clean adobe_reader.mru 2>/dev/null"
         su $usuario -c "bleachbit --clean adobe_reader.tmp 2>/dev/null"
+	su $usuario -c "bleachbit --clean brave.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean brave.vacuum 2>/dev/null"
 	su $usuario -c "bleachbit --clean chromium.cache 2>/dev/null"
 	su $usuario -c "bleachbit --clean chromium.vacuum 2>/dev/null"
-	su $usuario -c "bleachbit --clean google-chrome.cache 2>/dev/null"
-	su $usuario -c "bleachbit --clean google-chrome.vacuum 2>/dev/null"
+	su $usuario -c "bleachbit --clean google_chrome.cache 2>/dev/null"
+	su $usuario -c "bleachbit --clean google_chrome.vacuum 2>/dev/null"
 	su $usuario -c "bleachbit --clean firefox.cache 2>/dev/null"
 	su $usuario -c "bleachbit --clean firefox.vacuum 2>/dev/null"
 	su $usuario -c "bleachbit --clean firefox.crash_reports 2>/dev/null"
@@ -60,6 +63,11 @@ function clean_home {
 	su $usuario -c "bleachbit --clean libreoffice.cache 2>/dev/null"
 	su $usuario -c "bleachbit --clean libreoffice.history 2>/dev/null"
 	su $usuario -c "bleachbit --clean sqlite3.history 2>/dev/null"
+	su $usuario -c "bleachbit --clean system.cache 2>/dev/null"
+
+        [ -d /home/$1/$usuario/.config/xfce4 ] && rm -r /home/$1/$usuario/.config/xfce4/*
+        [ -d /home/$1/$usuario/.config/pulse ] && rm -r /home/$1/$usuario/.config/pulse/*
+        [ -d /home/$1/$usuario/.cache/sessions ] && rm -r /home/$1/$usuario/.cache/sesssions/*
      fi
   done
   
