@@ -4,7 +4,7 @@
 # descripción         : Realiza una limpieza en homes de alumnos y profesores
 # autor               : Esteban M. Navas Martín
 # fecha creación      : 06/04/2017
-# última modificación : 13/06/2022
+# última modificación : 20/12/2022
 # uso                 : clean-homes
 # instalación         : Guardar en  /usr/local/sbin/
 # sugerencia          : Programar tarea cron:
@@ -24,6 +24,24 @@
 # GNU General Public License at <http://www.gnu.org/licenses/> for
 # more details.
 #
+
+function bleachbit_install {
+   SYS_ID=$(lsb_release -i | awk '{print $3}' | tr '[:upper:]' '[:lower:]')
+   SYS_VER=$(lsb_release -rs | tr -d ".")
+
+   PACKAGE=$(curl -s -f -L https://www.bleachbit.org/download/linux | grep -Eo "file\=.*\.deb" | grep $SYS_ID | grep $SYS_VER | sort -u | cut -f2 -d"=")
+
+   BLEACHBIT_PACKAGE="https://download.bleachbit.org/$PACKAGE"
+
+   echo "Installing $PACKAGE..."
+
+   TEMP_DEB="$(mktemp)" &&
+   wget -O "$TEMP_DEB" $BLEACHBIT_PACKAGE &&
+   sudo dpkg -i "$TEMP_DEB"
+   rm -f "$TEMP_DEB"
+
+   echo "Package $PACKAGE installed."
+}
 
 function uso {
    echo "Limpieza de homes con BleachBit"
@@ -65,22 +83,22 @@ function clean_home {
 	su $usuario -c "bleachbit --clean sqlite3.history 2>/dev/null"
 	su $usuario -c "bleachbit --clean system.cache 2>/dev/null"
 
+        [ -x /usr/bin/trash-empty ] || apt-get update && apt-get -y install trash-cli
+
+        # echo "Vaciando la papelera del usuario $usuario"
+        # su $usuario -c /usr/bin/trash-empty
+
         [ -d /home/$1/$usuario/.config/xfce4 ] && rm -r /home/$1/$usuario/.config/xfce4/*
         [ -d /home/$1/$usuario/.config/pulse ] && rm -r /home/$1/$usuario/.config/pulse/*
         [ -d /home/$1/$usuario/.cache/sessions ] && rm -r /home/$1/$usuario/.cache/sesssions/*
      fi
   done
-  
+
   bleachbit --clean system.cache system.memory system.trash system.tmp 2>/dev/null
 }
 
 # Si bleachbit no se encuentra instalado, mostramos mensaje y finalizamos
-if ! [ -x /usr/bin/bleachbit  ]; then
-   echo "BleachBit no se encuentra instalado."
-   echo "Para instalarlo puede ejecutar:"
-   echo "   apt-get install bleachbit."
-   exit 1
-fi
+[ -x /usr/bin/bleachbit  ] || bleachbit_install
 
 # Si no hay parámetros, mostramos ayuda y finalizamos
 if [ -z "$1" ]; then

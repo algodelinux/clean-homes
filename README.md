@@ -11,8 +11,10 @@ Instalación
 
 La forma más sencilla de instalarlo es ejecutar estos comandos en el servidor:
 
-   * wget --no-check-certificate -O /usr/local/sbin/clean-homes https://raw.githubusercontent.com/algodelinux/clean-homes/master/clean-homes
-   * chmod 755 /usr/local/sbin/clean-homes
+```
+   wget --no-check-certificate -O /usr/local/sbin/clean-homes https://raw.githubusercontent.com/algodelinux/clean-homes/master/clean-homes
+   chmod 755 /usr/local/sbin/clean-homes
+```
   
 Uso                   
 ---
